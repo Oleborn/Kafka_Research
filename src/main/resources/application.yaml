@@ -1,0 +1,119 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: KafkaResearch
+
+  datasource:
+    url: jdbc:h2:mem:testDB
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  kafka:
+    bootstrap-servers: localhost:9094,localhost:9096,localhost:9098
+    consumer:
+      group-id: kafka-demo-group
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.json.trusted.packages: oleborn.kafkaresearch.*
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: true
+
+
+#Используйте закомментированную конфигурацию, если:
+#  Приложение работает в production
+#  Требуется максимальная надежность доставки
+#  Нужна поддержка транзакций
+#  Важна производительность и эффективность
+#  Требуется обработка только новых сообщений (latest)
+
+# kafka:
+#   listener:
+#     ack-mode: manual              # Ручное подтверждение сообщений (MANUAL/IMMEDIATE/BATCH/TIME)
+#     missing-topics-fatal: false   # Не завершать работу если топик отсутствует
+#   bootstrap-servers: localhost:9094,localhost:9096,localhost:9098
+#   properties:
+#     group.protocol: consumer              # Протокол координации группы
+#     partition.assignment.strategy: class  # Стратегия распределения партиций
+#     session.timeout.ms: 30000             # Таймаут сессии (10-60 сек)
+#     max.poll.interval.ms: 300000          # Макс. время обработки сообщений (5 мин)
+#     heartbeat.interval.ms: 3000           # Интервал heartbeat (1/3 от session.timeout)
+#    # Producer Configuration
+#   producer:
+#     properties:
+#       spring.json.add.type.headers: true                      # Добавлять информацию о типе в заголовки
+#     key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#     value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+#     acks: all                                                 # Гарантии доставки (0, 1, all)
+#     retries: 3                                                # Число попыток при ошибках
+#     enable-idempotence: true                                  # Идемпотентность (защита от дублей)
+#     batch-size: 16384                                         # Размер батча в байтах (16KB)
+#     linger-ms: 5                                              # Задержка перед отправкой батча
+#     buffer-memory: 33554432                                   # Бюффер памяти (32MB)
+#     compression-type: snappy                                  # Алгоритм сжатия (none/gzip/snappy/lz4/zstd)
+#     transaction-id-prefix: tx-                                # Префикс для транзакций
+#
+#    # Consumer Configuration
+#   consumer:
+#     group-id: kafka-demo-consumer-group
+#     key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+#     value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+#     auto-offset-reset: latest                                 # Поведение при отсутствии офсета (earliest/latest/none)
+#     enable-auto-commit: false                                 # Ручное управление офсетами
+#     isolation-level: read_committed                           # Уровень изоляции (read_committed/read_uncommitted)
+#     max-poll-records: 500                                     # Макс. сообщений за poll
+#     max-poll-interval-ms: 300000                              # Макс. время обработки
+#     session-timeout-ms: 30000                                 # Таймаут сессии
+#     heartbeat-interval-ms: 3000                               # Интервал heartbeat
+#
+#      properties:
+#        spring.json.trusted.packages: oleborn.kafkaresearch.*
+#        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+#        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+#
+#    # Streams Configuration(может и не нужны вовсе)
+#    streams:
+#      application-id: kafka-demo-streams-app
+#      default-key-serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+#      default-value-serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+#      state-dir: /tmp/kafka-streams
+
+# Logging configuration
+logging:
+  level:
+    com.example.kafka: DEBUG
+    org.apache.kafka: INFO
+    org.springframework.kafka: INFO
+
+# Custom application properties
+app:
+  kafka:
+    topics:
+      user-events: user-events        # Топик для пользовательских событий
+      order-events: order-events      # Топик для событий заказов
+      dead-letter-queue: dlq-topic    # Топик для "мертвых" сообщений
+    retry:
+      max-attempts: 3                 # Максимальное число попыток
+      backoff-delay: 1000             # Начальная задержка (мс)
+      multiplier: 2.0                 # Множитель задержки
+      max-delay: 10000                # Максимальная задержка (мс)
+
