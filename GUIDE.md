@@ -1,4 +1,4 @@
-# Apache Kafka: Полное руководство для Senior Java разработчиков
+# Apache Kafka
 
 **Автор:** Oleborn  
 **Дата:** 27 июля 2025  
